@@ -2,7 +2,7 @@ import { typeDefs } from './graphql-schema'
 import { ApolloServer } from 'apollo-server-express'
 import express from 'express'
 import neo4j from 'neo4j-driver'
-import { makeAugmentedSchema } from 'neo4j-graphql-js'
+import { Neo4jGraphQL } from '@neo4j/graphql'
 import dotenv from 'dotenv'
 
 
@@ -10,7 +10,6 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const app = express()
-
 
 const driver = neo4j.driver(
   process.env.NEO4J_URI || 'bolt://localhost:7687',
@@ -23,20 +22,15 @@ const driver = neo4j.driver(
   }
 )
 
-const augmentedSchema = makeAugmentedSchema({
-  typeDefs,
-  config: {
-    auth: {
-      isAuthenticated: false,
-    }
-  }
-})
+const neo4jGraphQL = new Neo4jGraphQL({ typeDefs })
+
+const schema = neo4jGraphQL.schema;
 
 const server = new ApolloServer({
   context: ({ req }) => {
     return { req, driver, neo4jDatabase: process.env.NEO4J_DATABASE }
   },
-  schema: augmentedSchema,
+  schema,
   introspection: true,
   playground: true,
 })
