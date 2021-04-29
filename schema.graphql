@@ -1,3 +1,16 @@
+enum TimestampOperation {
+    CREATE
+    UPDATE
+}
+
+directive @timestamp(
+    """Which events to generate timestamps on. Defaults to both create and update."""
+    operations: [TimestampOperation!]! = [CREATE, UPDATE]
+) on FIELD_DEFINITION
+
 type User {
+    id: ID! @id
     name: String
+    createdAt: DateTime! @timestamp(operations: [CREATE])
+    updatedAt: DateTime! @timestamp(operations: [UPDATE])
 }
